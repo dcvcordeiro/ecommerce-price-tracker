@@ -31,8 +31,3 @@ class PriceHistory(Base):
     price = Column(Float, nullable=False)
     date_checked = Column(DateTime, default=datetime.datetime.utcnow)
 
-engine = create_engine('sqlite:///prices.db')
-Base.metadata.create_all(engine)
-
-Session = sessionmaker(bind=engine)
-session = Session()
