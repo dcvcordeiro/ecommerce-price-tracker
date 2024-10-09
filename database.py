@@ -26,7 +26,8 @@ def get_database_session():
     session_db = SessionDB()
 
     # Check if the Platform table is empty and if it is populate 
-    if not session_db.query(exists().where(Platform.id != None)).scalar():
+    row_count = session_db.query(Platform).count()
+    if row_count == 0:
         add_platforms(db_session)
 
     return db_session
