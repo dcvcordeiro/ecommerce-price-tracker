@@ -17,24 +17,7 @@ def get_amazon_price(session, url):
     response = session.get(url, headers=headers)
     soup = BeautifulSoup(response.content, 'lxml')
     try:
-        price = soup.find("span", attrs={'class':'a-offscreen'}).string.strip()
 
-    except AttributeError:
-        price = ""	
-    print(price)
-    
-    exit()
-    # price = soup.find('span', {'id': 'priceblock_ourprice'}).text
-    # return price
-
-def add_platforms():
-    platforms = ['Amazon', 'Worten', 'Fnac']
-    for platform_name in platforms:
-        platform = Platform(name=platform_name)
-        session.add(platform)
-    session.commit()
-
-add_platforms()
 
 if __name__ == "__main__":
     
