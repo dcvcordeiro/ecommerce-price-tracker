@@ -1,25 +1,35 @@
-from sqlalchemy import create_engine, exists
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import os
-from dotenv import load_dotenv 
-from data_model import Base, Platform
+import json
+from dotenv import load_dotenv
+
+from data_model import Base, Product, Platform, ProductPlatform, PriceHistory
 
 load_dotenv() 
-
-def add_platforms(db_session):
-    platforms = os.getenv("PLATFORMS").split()
-
-    for platform_name in platforms:
-        platform = Platform(name=platform_name)
-        db_session.add(platform)
-    db_session.commit()
 
 def get_database_session():
     db = os.getenv("DATABASE")
     engine = create_engine(f'sqlite:///{db}')
-
+    SessionDB = sessionmaker(bind=engine)
+    session_db = SessionDB()
+    
     if not os.path.exists(db):
         Base.metadata.create_all(engine)
+        setup_db(session_db)
+
+    return session_db
+
+def setup_db(session_db):
+
+    with open(os.getenv("DATABASE_INIT"), "r") as fp:
+        products = json.load(fp)
+    
+    for product in products:
+        product_id = add_product(session_db, product["name"])
+        for platform, url in product["platformsURL"].items():
+            platform_id = add_platform(session_db, platform)
+            add_map_product_platform(session_db, product_id, platform_id, url)
 
 
 def add_product(session_db, product_name):
