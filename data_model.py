@@ -29,5 +29,5 @@ class PriceHistory(Base):
     id = Column(Integer, primary_key=True)
     product_platform_id = Column(Integer, ForeignKey('product_platform.id'), nullable=False)
     price = Column(Float, nullable=False)
-    date_checked = Column(DateTime, default=datetime.datetime.utcnow)
+    date_checked = Column(DateTime, default=datetime.datetime.now(datetime.timezone.utc))
 
