@@ -1,5 +1,8 @@
-import requests
+import os
 from bs4 import BeautifulSoup
+from selenium.webdriver import Chrome
+from selenium.webdriver.chrome.options import Options
+from lxml import etree
 
 import database
 from data_model import ProductPlatform
@@ -30,14 +33,18 @@ def sanitize_price(price_str):
     price = price.replace(" ","")
     price = price.replace(",", ".")
     return float(price)
+
 def update_prices():
     db_session = database.get_database_session()
-    request_session = requests.Session()
     product_mapping = db_session.query(ProductPlatform).all()
 
     for mapping in product_mapping:
         if mapping.platform.name == "Amazon":
-            product_price = get_amazon_price(request_session, mapping.url)
+            xpath_env = f"{mapping.platform.name.upper()}_PRICE_XPATH"
+            xpath = os.getenv(xpath_env)
+            price = parser(mapping.url, xpath)
+            product_price = sanitize_price(price)
+            
         else:
             product_price = -1
         if product_price == -1:
