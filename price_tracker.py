@@ -4,25 +4,32 @@ from bs4 import BeautifulSoup
 import database
 from data_model import ProductPlatform
 
-def get_amazon_price(session, url):
-    headers = {
-        "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:66.0) Gecko/20100101 Firefox/66.0", 
-        "Accept-Encoding":"gzip, deflate",
-        "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,/;q=0.8",
-        "DNT":"1",
-        "Connection":"close",
-        "Upgrade-Insecure-Requests":"1"
-    }
-    response = session.get(url, headers=headers)
-    soup = BeautifulSoup(response.content, 'lxml')
-    try:
-        lateral_box_div = soup.find("div", attrs={'class': 'a-box-group'})
-        price = lateral_box_div.find("span", attrs={'class':'a-offscreen'})
-        price= float(price.string.strip("€").replace(",", "."))
-    except Exception as e:
-        price = -1
+def parser(url, xpath):
+    
+    # Configure Chrome options
+    options = Options()
+    options.add_argument('--headless=new')
+    driver = Chrome(options=options)
+    driver.set_page_load_timeout(10)
+
+    driver.get(url)
+    html = driver.page_source
+
+    driver.quit()
+
+    soup = BeautifulSoup(html, 'html.parser')
+    dom = etree.HTML(str(soup))
+    
+    price = dom.xpath(xpath)[0].text
     return price
 
+def sanitize_price(price_str):
+
+    price = price_str.replace("\xa0","") #replaces &nbsp;
+    price = price.strip(" ").split("€")[0] # This can cause issues if value is on the right side of the currency symbol
+    price = price.replace(" ","")
+    price = price.replace(",", ".")
+    return float(price)
 def update_prices():
     db_session = database.get_database_session()
     request_session = requests.Session()
