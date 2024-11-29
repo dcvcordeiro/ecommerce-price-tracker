@@ -39,16 +39,11 @@ def update_prices():
     product_mapping = db_session.query(ProductPlatform).all()
 
     for mapping in product_mapping:
-        if mapping.platform.name == "Amazon":
-            xpath_env = f"{mapping.platform.name.upper()}_PRICE_XPATH"
-            xpath = os.getenv(xpath_env)
-            price = parser(mapping.url, xpath)
-            product_price = sanitize_price(price)
+        xpath_env = f"{mapping.platform.name.upper()}_PRICE_XPATH"
+        xpath = os.getenv(xpath_env)
+        price = parser(mapping.url, xpath)
+        product_price = sanitize_price(price)
             
-        else:
-            product_price = -1
-        if product_price == -1:
-            continue
         database.add_price(db_session, mapping.id, product_price)
 
 
